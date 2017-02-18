@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests;
+use App\Investment;
+use App\Customer;
+use Illuminate\Support\Facades\Auth;
+
+class InvestmentController extends Controller
+{
+    public function index()
+    {
+        if (Auth::check()) {
+            $investments=Investment::all();
+            return view('investments.index',compact('investments'));
+        }
+
+        else {
+            return redirect('/login');
+        }
+    }
+    public function show($id)
+    {
+        if (Auth::check()) {
+            $investment= Investment::findOrFail($id);
+
+            return view('investments.show',compact('investment'));
+        }
+        else {
+            return redirect('/login');
+        }
+    }
+
+    public function create()
+    {
+        if (Auth::check()) {
+            $customers = Customer::lists('name','id');
+            return view('investments.create', compact('customers'));
+        }
+        else {
+            return redirect('/login');
+        }
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function store(Request $request)
+    {
+        {
+            $this->validate($request, [
+                'category' => 'required',
+                'description' => 'required',
+                'acquired_date' => 'required',
+            ]);
+            $investment = new Investment($request->all());
+            $investment->save();
+
+            return redirect('investments');
+        }
+    }
+    public function edit($id)
+    { if (Auth::check()) {
+        $investment=Investment::find($id);
+        return view('investments.edit',compact('investment'));
+    }else {
+        return redirect('/login');
+    }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function update($id,Request $request)
+    {if (Auth::check()) {
+        $investment= new Investment($request->all());
+        $investment=Investment::find($id);
+        $investment->update($request->all());
+        return redirect('investments');
+    }
+    else {
+        return redirect('/login');
+    }
+    }
+    public function destroy($id)
+    {
+        Investment::find($id)->delete();
+        return redirect('investments');
+    }
+}
